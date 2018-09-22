@@ -76,14 +76,13 @@ func SetDebugLog(l *log.Logger) {
 }
 
 // RoundTrip implements the http.RoundTripper interface and is used to wrap HTTP requests in order to sign them for AWS
-// API calls. The scheme for all requests will be changed to HTTPS.
+// API calls.
 func (s *Signer) RoundTrip(req *http.Request) (*http.Response, error) {
 	if h, ok := req.Header["Authorization"]; ok && len(h) > 0 && strings.HasPrefix(h[0], "AWS4") {
 		s.logger.Println("Received request to sign that is already signed. Skipping.")
 		return s.transport.RoundTrip(req)
 	}
 	s.logger.Printf("Receiving request for signing: %+v", req)
-	req.URL.Scheme = "https"
 	if strings.Contains(req.URL.RawPath, "%2C") {
 		s.logger.Printf("Escaping path for URL path '%s'", req.URL.RawPath)
 		req.URL.RawPath = rest.EscapePath(req.URL.RawPath, false)
